@@ -12,7 +12,7 @@ async function fetchVideosFromChannels() {
 
     try {
       const res = await axios.get(url);
-
+     
       const videos = res.data.items.map((video) => ({
         title: video.snippet.title,
         videoId: video.id.videoId,

@@ -3,7 +3,7 @@ module.exports = [
   // "UCbmcc1ZTbJ1hfq1jzv3pF6w", // Apna College
   "UCJskGeByzRRSvmOyZOz61ig", // Take U Forward (Striver)
    "UCeVMnSShP_Iviwkknt83cww", // CodeWithHarry
-  // "UCZCFT11CWBi3MHNlGf019nw", // Kunal Kushwaha
+   "UCZCFT11CWBi3MHNlGf019nw", // Kunal Kushwaha
   // "UCBwmMxybNva6P_5VmxjzwqA", // Gate Smashers
   // "UCdYr0RLW7G3kU5B5Hmdyyxg", // Jenny's Lectures CS/IT NET&JRF
   // "UCb3gFgNf2kHUpY1mBOY6LIg", // College Wallah

@@ -1,0 +1,41 @@
+.profile-view {
+  display: flex;
+  min-height: 55vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.profile-avatar {
+  display: grid;
+  width: 88px;
+  height: 88px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f1ed;
+  color: #146b55;
+}
+
+.profile-avatar svg {
+  width: 42px;
+  height: 42px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.profile-view h2 {
+  margin: 18px 0 6px;
+  color: #202124;
+}
+
+.profile-view p {
+  max-width: 320px;
+  margin: 0;
+  color: #666;
+  line-height: 1.5;
+}

@@ -22,6 +22,14 @@ const videoSchema = new mongoose.Schema(
     channelTitle: {
       type: String,
       required: true,
+    },
+    channelId: {
+      type:String,
+      required: true
+    },
+    watchLater: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true } // adds createdAt & updatedAt automatically

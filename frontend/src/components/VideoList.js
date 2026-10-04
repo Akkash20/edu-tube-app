@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAllVideos } from "../services/videoService";
+import { getAllVideos, updateWatchLaterVideo } from "../services/videoService";
 import {
   MoreOptionsIcon,
   NotInterestedIcon,
@@ -30,13 +30,40 @@ const VideoList = () => {
   const [hiddenVideoIds, setHiddenVideoIds] = useState([]);
   const [openMenuVideoId, setOpenMenuVideoId] = useState(null);
   const [openMenuPlacement, setOpenMenuPlacement] = useState("below");
-  const [notice, setNotice] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+
+  const showToast = (message) => {
+    setToastMessage(message);
+  };
 
   useEffect(() => {
     getAllVideos()
-      .then(setVideos)
+      .then((fetchedVideos) => {
+        setVideos(fetchedVideos);
+
+        const savedVideoIds = fetchedVideos
+          .filter((video) => video.watchLater === true)
+          .map((video) => video.videoId);
+
+        if (savedVideoIds.length > 0) {
+          setWatchLaterIds((currentIds) => {
+            const uniqueIds = new Set([...currentIds, ...savedVideoIds]);
+            return Array.from(uniqueIds);
+          });
+        }
+      })
       .catch((err) => console.error("Error fetching videos:", err));
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setToastMessage("");
+    }, 2200);
+
+    return () => window.clearTimeout(timerId);
+  }, [toastMessage]);
 
   useEffect(() => {
     try {
@@ -45,7 +72,7 @@ const VideoList = () => {
         JSON.stringify(watchLaterIds),
       );
     } catch {
-      setNotice("Watch later could not be saved in this browser.");
+      showToast("Watch later could not be saved in this browser.");
     }
   }, [watchLaterIds]);
 
@@ -63,14 +90,37 @@ const VideoList = () => {
       document.removeEventListener("pointerdown", closeMenuOnOutsideClick);
   }, [openMenuVideoId]);
 
-  const toggleWatchLater = (video) => {
-    const isSaved = watchLaterIds.includes(video.videoId);
-    setWatchLaterIds((currentIds) =>
-      isSaved
-        ? currentIds.filter((id) => id !== video.videoId)
-        : [...currentIds, video.videoId],
-    );
-    setNotice(isSaved ? "Removed from Watch later." : "Added to Watch later.");
+  const toggleWatchLater = async (video) => {
+    const isSaved =
+      Boolean(video.watchLater) || watchLaterIds.includes(video.videoId);
+    const nextWatchLaterValue = !isSaved;
+
+    try {
+      await updateWatchLaterVideo(video.videoId, nextWatchLaterValue);
+
+      setVideos((currentVideos) =>
+        currentVideos.map((item) =>
+          item.videoId === video.videoId
+            ? { ...item, watchLater: nextWatchLaterValue }
+            : item,
+        ),
+      );
+
+      setWatchLaterIds((currentIds) =>
+        nextWatchLaterValue
+          ? [...currentIds, video.videoId]
+          : currentIds.filter((id) => id !== video.videoId),
+      );
+      showToast(
+        nextWatchLaterValue
+          ? "Added to Watch later."
+          : "Removed from Watch later.",
+      );
+    } catch (error) {
+      console.error("Error updating watch later:", error);
+      showToast("Could not update Watch later.");
+    }
+
     setOpenMenuVideoId(null);
   };
 
@@ -80,16 +130,16 @@ const VideoList = () => {
     try {
       if (navigator.share) {
         await navigator.share({ title: video.title, url });
-        setNotice("Video shared.");
+        showToast("Video shared.");
       } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
-        setNotice("Video link copied.");
+        showToast("Video link copied.");
       } else {
-        setNotice("Sharing is not available in this browser.");
+        showToast("Sharing is not available in this browser.");
       }
     } catch (error) {
       if (error.name !== "AbortError") {
-        setNotice("Could not share this video.");
+        showToast("Could not share this video.");
       }
     }
 
@@ -98,21 +148,25 @@ const VideoList = () => {
 
   const hideVideo = (video) => {
     setHiddenVideoIds((currentIds) => [...currentIds, video.videoId]);
-    setNotice("Video removed from your feed.");
+    showToast("Video removed from your feed.");
     setOpenMenuVideoId(null);
   };
 
   return (
     <div className="container">
       <h2 className="header">🎓 Educational Video Feed</h2>
-      <p className="video-list-status" role="status" aria-live="polite">
-        {notice}
-      </p>
+      {toastMessage && (
+        <div className="video-toast" role="status" aria-live="polite">
+          {toastMessage}
+        </div>
+      )}
       <div className="grid">
         {videos
           .filter((video) => !hiddenVideoIds.includes(video.videoId))
           .map((video) => {
-            const isSaved = watchLaterIds.includes(video.videoId);
+            const isSaved =
+              Boolean(video.watchLater) ||
+              watchLaterIds.includes(video.videoId);
             const isMenuOpen = openMenuVideoId === video.videoId;
 
             return (

@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { getAllVideos } from "../services/videoService";
+import { getAllVideos, updateWatchLaterVideo } from "../services/videoService";
 import VideoList from "./VideoList";
 
 jest.mock("../services/videoService", () => ({
   getAllVideos: jest.fn(),
+  updateWatchLaterVideo: jest.fn(),
 }));
 
 beforeEach(() => {
@@ -15,6 +16,10 @@ beforeEach(() => {
       channelTitle: "Edu Channel",
     },
   ]);
+  updateWatchLaterVideo.mockResolvedValue({
+    videoId: "video-1",
+    watchLater: true,
+  });
 });
 
 test("adds and removes a video from Watch later", async () => {
@@ -27,8 +32,10 @@ test("adds and removes a video from Watch later", async () => {
   );
   fireEvent.click(screen.getByRole("button", { name: "Watch later" }));
 
-  expect(screen.getByRole("status")).toHaveTextContent("Added to Watch later.");
   await waitFor(() => {
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Added to Watch later.",
+    );
     expect(window.localStorage.getItem("edutube.watchLater")).toBe(
       '["video-1"]',
     );
@@ -44,8 +51,34 @@ test("adds and removes a video from Watch later", async () => {
   );
 
   await waitFor(() => {
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Removed from Watch later.",
+    );
     expect(window.localStorage.getItem("edutube.watchLater")).toBe("[]");
   });
+});
+
+test("shows remove from Watch later when the backend marks the video as saved", async () => {
+  getAllVideos.mockResolvedValue([
+    {
+      videoId: "video-1",
+      title: "Intro to Science",
+      channelTitle: "Edu Channel",
+      watchLater: true,
+    },
+  ]);
+
+  render(<VideoList />);
+
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "More options for Intro to Science",
+    }),
+  );
+
+  expect(
+    screen.getByRole("button", { name: "Remove from Watch later" }),
+  ).toBeInTheDocument();
 });
 
 test("opens the options menu upward when there is not enough room below", async () => {

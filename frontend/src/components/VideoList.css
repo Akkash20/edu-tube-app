@@ -9,12 +9,23 @@
   font-size: 1.5rem;
 }
 
-.video-list-status {
-  min-height: 1.25em;
-  margin: -16px 0 8px;
-  color: #146b55;
-  font-size: 0.875rem;
+.video-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 30;
+  min-width: 180px;
+  max-width: 80vw;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(20, 107, 85, 0.96);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-align: center;
+  pointer-events: none;
 }
 
 .grid {
